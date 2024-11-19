@@ -17,8 +17,10 @@ def chatbot_api(request):
             body = json.loads(request.body.decode("utf-8"))
             message = body.get("message", "")
             
-            if message == "":
-                return JsonResponse({"error": "message is required"}, status=500)
+            if not message:
+                return JsonResponse({"error": "Message is required"}, status=400)
+            if len(message) < 3:
+                return JsonResponse({"error": "Message must be at least 3 characters long"}, status=400)
 
             session_client = dialogflow.SessionsClient()
             session = session_client.session_path("alex-sirait-p9cn", "unique-session-id")

@@ -16,11 +16,14 @@ def chatbot_api(request):
         try:
             body = json.loads(request.body.decode("utf-8"))
             message = body.get("message", "")
+            
+            if message == "":
+                return JsonResponse({"error": "message is required"}, status=500)
 
             session_client = dialogflow.SessionsClient()
             session = session_client.session_path("alex-sirait-p9cn", "unique-session-id")
 
-            text_input = dialogflow.TextInput(text=message, language_code="en")
+            text_input = dialogflow.TextInput(text=message, language_code="id")
             query_input = dialogflow.QueryInput(text=text_input)
             response = session_client.detect_intent(request={"session": session, "query_input": query_input})
 

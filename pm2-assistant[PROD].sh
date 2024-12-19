@@ -2,7 +2,7 @@
 
 PORT="40005"
 HOST="192.168.88.62"
-APP_NAME="mysatnusa-api-django"
+APP_NAME="assistant"
 
 # Definisikan variabel
 DJANGO_DIR="/var/www/$APP_NAME/mysatnusa"

@@ -156,7 +156,8 @@ def gemini_prompt_view(request):
                 return JsonResponse({"response": response.text})
 
             # For Satnusa-related queries, add DATA_SATNUSA context
-            full_prompt = f"{DATA_SATNUSA}\n{'\n'.join(conversation_history[user_id])}\nAssistant:"
+            conversation_history_text = '\n'.join(conversation_history[user_id])
+            full_prompt = f"{DATA_SATNUSA}\n{conversation_history_text}\nAssistant:"
 
             # Call Gemini API to generate content based on the prompt
             genai.configure(api_key="AIzaSyCz6r6myd9wS6iB64x_6XIVPmqJVMv2PB4")

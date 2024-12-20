@@ -37,10 +37,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -121,3 +123,27 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:9000",
+    "http://127.0.0.1:9000",
+    "http://localhost:30000",
+    "http://127.0.0.1:30000",
+    "http://192.168.88.60:30000",
+    "http://localhost:30001",
+    "http://127.0.0.1:30001",
+    "http://192.168.88.60:30001",
+    "http://localhost:30002",
+    "http://127.0.0.1:30002",
+    "http://192.168.88.60:30002",
+    "http://localhost:30003",
+    "http://127.0.0.1:30003",
+    "http://192.168.88.60:30003",
+    "http://localhost:30004",
+    "http://127.0.0.1:30004",
+    "http://192.168.88.60:30004",
+    "http://localhost",
+]
+
+CORS_EXPOSE_HEADERS = ['Content-Disposition']
+CORS_ALLOW_ALL_ORIGINS = True

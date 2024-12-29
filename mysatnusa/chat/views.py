@@ -1,25 +1,35 @@
 import json
+import logging
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from google.cloud import dialogflow_v2 as dialogflow
-import os
 from pathlib import Path
-import google.generativeai as genai
+import os
 from transformers import BertTokenizer, BertForSequenceClassification
 import torch
+from concurrent.futures import ThreadPoolExecutor
+import google.generativeai as genai
+from spacy import load
 
+# Logging Configuration
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
+# Configuration for Credentials and Google Generative AI
 current_dir = Path(__file__).parent
 credentials_path = current_dir / "credentials" / "alex-sirait-p9cn-cb8b06ed7633.json"
-
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(credentials_path)
 
-# Pre-trained BERT model for sentence classification
-model = BertForSequenceClassification.from_pretrained("bert-base-uncased", num_labels=2)
+# Load Pre-trained BERT Model
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+bert_model = BertForSequenceClassification.from_pretrained("bert-base-uncased", num_labels=2).to(DEVICE)
 tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
-# Define static data
+
+# Load SpaCy for NER (Named Entity Recognition)
+nlp = load("en_core_web_sm")
+
+# Static Data Knowledge Base (Text-Based)
 DATA_SATNUSA = """
-    kamu adalah TechFusion, asisten pintar berbasis AI yang dirancang untuk membantu Pak Ali Sadikin dalam melakukan presentasi di hadapan para top management Satnusa.
-    Kamu memiliki kemampuan analisis data, visualisasi, dan interaksi secara real-time untuk menjawab semua pertanyaan yang relevan.
+    Kamu adalah TechFusion, asisten pintar berbasis AI yang dirancang untuk membantu Pak Ali Sadikin dalam melakukan presentasi di hadapan para top management Satnusa.
+    Kamu harus bisa menjawab setiap pertanyaan dari Pak Ali dengan Singkat Padat sesuai dengan pertanyaan Pak Ali langsung pada intinya saja tidak perlu berpoin poin kamu langsung memberikan kesimpulan atau rangkuman yang sangat baik sehingga tidak perlu banyak hal tapi intinya saja tetapi jangan terlalu singkat sekali minimal 1 kalimat.
 
     **Informasi Utama Perusahaan:**
     - Nama Perusahaan: Satnusa
@@ -95,81 +105,112 @@ DATA_SATNUSA = """
     - Mengurangi waktu persiapan hingga 50%.
 """
 
-# Maintain a session history for each user (or session)
+# Conversation History
 conversation_history = {}
 
-# Define function to check relevance using BERT
-def is_relevant_to_satnusa(prompt):
-    try:
-        # Tokenize and encode the prompt
-        inputs = tokenizer(prompt, return_tensors="pt", truncation=True, padding=True, max_length=512)
-        
-        # Get predictions from the model
-        with torch.no_grad():
-            logits = model(**inputs).logits
-        prediction = torch.argmax(logits, dim=-1)
-        
-        # Return True if the prediction is relevant (class '1')
-        return prediction.item() == 1
-    except Exception as e:
-        print(f"Error in relevance detection: {e}")
-        return False
+# Dynamic Relevance Threshold
+RELEVANCE_THRESHOLD = 0.7
 
-# Define the API endpoint for prompt handling
+# Helper Functions
+def extract_entities(text):
+    """
+    Extract key entities from the text using SpaCy's NER model.
+    """
+    doc = nlp(text)
+    entities = {ent.text: ent.label_ for ent in doc.ents}
+    return entities
+
+def search_knowledge_base(query, relevant_entities=None):
+    """
+    Search in the local knowledge base (DATA_SATNUSA) for relevant information, prioritizing entities.
+    """
+    query_lower = query.lower()
+    
+    if relevant_entities:
+        # Enhance the search by considering entities
+        for entity, label in relevant_entities.items():
+            if entity.lower() in DATA_SATNUSA.lower():
+                return DATA_SATNUSA  # Return the data with higher relevance
+    
+    if query_lower in DATA_SATNUSA.lower():
+        return DATA_SATNUSA
+    else:
+        return "No relevant information found in the knowledge base."
+
+def check_relevance_with_confidence(prompt):
+    """
+    Check the relevance of the prompt using BERT and return confidence score.
+    """
+    try:
+        inputs = tokenizer(prompt, return_tensors="pt", truncation=True, padding=True, max_length=512).to(DEVICE)
+        with torch.no_grad():
+            logits = bert_model(**inputs).logits
+        probabilities = torch.softmax(logits, dim=-1)
+        relevance_score = probabilities[0, 1].item()
+        logging.info(f"Relevance score: {relevance_score}")
+        return relevance_score >= RELEVANCE_THRESHOLD, relevance_score
+    except Exception as e:
+        logging.error(f"Error in relevance detection: {e}")
+        return False, 0.0
+
+def append_conversation_history(user_id, prompt, response=None):
+    """
+    Append user prompt and response to the conversation history.
+    """
+    if user_id not in conversation_history:
+        conversation_history[user_id] = []
+    conversation_history[user_id].append(f"User: {prompt}")
+    if response:
+        conversation_history[user_id].append(f"Assistant: {response}")
+
+def generate_response(prompt, context, relevant_entities):
+    """
+    Generate a response using Google Generative AI or fallback to the knowledge base (DATA_SATNUSA).
+    """
+    try:
+        # Integrate Gemini AI with fallback to local knowledge base
+        genai.configure(api_key="AIzaSyCz6r6myd9wS6iB64x_6XIVPmqJVMv2PB4")
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        full_prompt = f"{context}\n{prompt}"
+        response = model.generate_content(full_prompt)
+        
+        # Enhance response with relevant entities
+        enhanced_response = f"{response.text}\n\nKey Entities: {relevant_entities}"
+        return enhanced_response
+    except Exception as e:
+        logging.warning(f"Google Generative AI failed: {e}. Falling back to local knowledge base response.")
+        return search_knowledge_base(prompt, relevant_entities)
+
 @csrf_exempt
 def gemini_prompt_view(request):
     if request.method == "POST":
         try:
-            # Parse the request body for the prompt
+            # Parse request data
             data = json.loads(request.body)
-            prompt = data.get("prompt", "")
-            user_id = data.get("user_id", "default_user")  # Use user_id to identify the user
+            prompt = data.get("prompt", "").strip()
+            user_id = data.get("user_id", "default_user").strip()
 
             if not prompt:
                 return JsonResponse({"error": "Prompt is required."}, status=400)
 
-            # Initialize conversation history for the user if not present
-            if user_id not in conversation_history:
-                conversation_history[user_id] = []
-
-            # Append current prompt to the conversation history
-            conversation_history[user_id].append(f"User: {prompt}")
-
-            # Check if the prompt is relevant to DATA_SATNUSA
-            is_satnusa_relevant = is_relevant_to_satnusa(prompt)
-
-            # For general knowledge queries, handle it without DATA_SATNUSA context
-            if not is_satnusa_relevant:
-                # Create the conversation history string
-                history = "\n".join(conversation_history[user_id])
-                full_prompt = f"{history}\nAssistant:"
-
-                # Directly generate the response for general knowledge
-                genai.configure(api_key="AIzaSyCz6r6myd9wS6iB64x_6XIVPmqJVMv2PB4")
-                model = genai.GenerativeModel("gemini-1.5-flash")
-                response = model.generate_content(full_prompt)
-                
-                # Store the assistant's response in the conversation history
-                conversation_history[user_id].append(f"Assistant: {response.text}")
-
-                # Return the general knowledge response
-                return JsonResponse({"response": response.text})
-
-            # For Satnusa-related queries, add DATA_SATNUSA context
-            conversation_history_text = '\n'.join(conversation_history[user_id])
-            full_prompt = f"{DATA_SATNUSA}\n{conversation_history_text}\nAssistant:"
-
-            # Call Gemini API to generate content based on the prompt
-            genai.configure(api_key="AIzaSyCz6r6myd9wS6iB64x_6XIVPmqJVMv2PB4")
-            model = genai.GenerativeModel("gemini-1.5-flash")
-            response = model.generate_content(full_prompt)
-
-            # Store the assistant's response in the conversation history
-            conversation_history[user_id].append(f"Assistant: {response.text}")
+            # Extract relevant entities from the prompt
+            relevant_entities = extract_entities(prompt)
             
-            return JsonResponse({"response": response.text})
-        
-        except Exception as e:
-            return JsonResponse({"error": f"An error occurred: {str(e)}"}, status=500)
+            # Process relevance and response
+            is_relevant, relevance_score = check_relevance_with_confidence(prompt)
+            context = DATA_SATNUSA if not is_relevant else "\n".join(conversation_history.get(user_id, []))
+            
+            # Generate response based on context and entities
+            response_text = generate_response(prompt, context, relevant_entities)
 
-    return JsonResponse({"error": "Invalid request method."}, status=405)
+            # Append conversation history
+            append_conversation_history(user_id, prompt, response_text)
+
+            # Log the response
+            logging.info(f"Response for user {user_id}: {response_text}")
+            return JsonResponse({"response": response_text, "relevance_score": relevance_score})
+        except Exception as e:
+            logging.error(f"Error processing request: {e}")
+            return JsonResponse({"error": "Internal server error"}, status=500)
+
+    return JsonResponse({"error": "Only POST method is allowed."}, status=405)

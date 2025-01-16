@@ -37,8 +37,7 @@ DATA_SATNUSA = """
     - CEO: Bapak Alex Sirait
       - Lokasi: Medan Deli Serdang
       - Jumlah Anak: 3
-      - Foto CEO : https://webapi.satnusa.com/EmplFoto/000001.JPG
-      - Canva CEO : (http://127.0.0.1:8000/media/chat/public/PPTVue.jsxDjango.pdf)
+      - Foto CEO : https://webapi.satnusa.com/EmplFoto/000001.JPG # Ini URL foto yang harus disebutkan
     - Divisi Terbesar: DOT (Department of Technology)
       - Kepala Divisi: Pak Ali Sadikin (lahir 06 Desember 2000)
       - Fungsi: Inovasi teknologi dan transformasi digital perusahaan.
@@ -105,6 +104,11 @@ DATA_SATNUSA = """
     - Memungkinkan Pak Ali fokus pada interaksi, sementara TechFusion menangani visualisasi dan pertanyaan.
     - Simulasi dampak strategi baru memberikan nilai tambah dalam pengambilan keputusan.
     - Mengurangi waktu persiapan hingga 50%.
+    
+    **Asset Presentasi:**
+    - Video Project DOT 2024 : (http://127.0.0.1:8000/media/chat/public/IMG_1201.mp4) # Ini URL video yang harus disebutkan
+    - Video Project DOT 2025 : (http://127.0.0.1:8000/media/chat/public/mov_bbb.mp4) # Ini URL video yang harus disebutkan
+    - Video Project DOT 2023 : (http://127.0.0.1:8000/media/chat/public/movie.mp4) # Ini URL video yang harus disebutkan
 """
 
 # Conversation History

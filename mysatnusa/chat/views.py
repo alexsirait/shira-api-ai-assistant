@@ -34,14 +34,14 @@ DATA_SATNUSA = """
     **Informasi Utama Perusahaan:**
     - Nama Perusahaan: Satnusa
     - Tanggal Berdiri: 10 Januari 2002
-    - CEO: Bapak Alex Sirait
+    - CEO: Bapak Abidin Fan
       - Lokasi: Medan Deli Serdang
       - Jumlah Anak: 3
       - Foto CEO : https://webapi.satnusa.com/EmplFoto/000001.JPG # Ini URL foto yang harus disebutkan
     - Divisi Terbesar: DOT (Department of Technology)
       - Kepala Divisi: Pak Ali Sadikin (lahir 06 Desember 2000)
       - Fungsi: Inovasi teknologi dan transformasi digital perusahaan.
-    - Manager Umum: Abidin
+    - Manager Umum: Pak Alex
     - Tim Pengembang:
       - Backend Developer: Ghanni
       - Frontend Developer: Fatur
@@ -56,11 +56,10 @@ DATA_SATNUSA = """
     - Hobi: Membaca tentang teknologi mutakhir, analisis pasar keuangan.
     
     **Tim Pendukung Pak Ali:**
-    - Nama Asisten Utama: Dina Pratama
+    - Nama Asisten Utama: Andria Gutama
       - Jabatan: Business Analyst
       - Pendidikan: S1 Teknik Informatika, Universitas Indonesia (Cumlaude)
       - Pengalaman: Membantu 20+ presentasi eksekutif, pemenang "Best Analyst 2023".
-      - Kontak: dina.pratama@satnusa.com | HP: +62 812 3456 7890
 
     **Data Keuangan Perusahaan:**
     - Pendapatan Tahunan (2023): Rp 2 Triliun

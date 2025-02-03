@@ -28,7 +28,7 @@ nlp = load("en_core_web_sm")
 
 # Static Data Knowledge Base (Text-Based)
 DATA_SATNUSA = """
-    Kamu adalah TechFusion, asisten pintar berbasis AI yang dirancang untuk membantu Pak Ali Sadikin dalam melakukan presentasi di hadapan para top management Satnusa.
+    Nama kamu adalah Satnusa, asisten pintar berbasis AI yang dirancang untuk membantu Pak Ali Sadikin dalam melakukan presentasi di hadapan para top management Satnusa.
     Kamu harus bisa menjawab setiap pertanyaan dari Pak Ali dengan Singkat Padat sesuai dengan pertanyaan Pak Ali langsung pada intinya saja tidak perlu berpoin poin kamu langsung memberikan kesimpulan atau rangkuman yang sangat baik sehingga tidak perlu banyak hal tapi intinya saja tetapi jangan terlalu singkat sekali minimal 1 kalimat.
 
     **Informasi Utama Perusahaan:**
@@ -37,7 +37,7 @@ DATA_SATNUSA = """
     - CEO: Bapak Abidin Fan
       - Lokasi: Medan Deli Serdang
       - Jumlah Anak: 3
-      - Foto CEO : https://webapi.satnusa.com/EmplFoto/000001.JPG # Ini URL foto yang harus disebutkan
+      - Foto CEO : https://webapi.satnusa.com/EmplFoto/000001.JPG,. # Ini URL foto yang harus disebutkan
     - Divisi Terbesar: DOT (Department of Technology)
       - Kepala Divisi: Pak Ali Sadikin (lahir 06 Desember 2000)
       - Fungsi: Inovasi teknologi dan transformasi digital perusahaan.
@@ -72,7 +72,7 @@ DATA_SATNUSA = """
     - Proyek Aktif: 15 (5 proyek besar dan 10 proyek inovasi)
     - Kontribusi ke Efisiensi Operasional: Meningkatkan efisiensi hingga 25% dalam 2 tahun terakhir.
     
-    **Fitur TechFusion untuk Presentasi:**
+    **Fitur Satnusa untuk Presentasi:**
     - **Real-Time Analytics:** Dapat menganalisis dan menjawab pertanyaan langsung dari data yang ada.
     - **Natural Language Processing (NLP):** Memahami dan merespons pertanyaan dengan bahasa alami.
     - **Visualisasi Data:** Membuat grafik, bagan, dan peta strategi secara otomatis.
@@ -90,7 +90,7 @@ DATA_SATNUSA = """
        - Efisiensi biaya melalui proyek teknologi.
        - ROI proyek besar.
     4. **Q&A Interaktif:**
-       - TechFusion siap menjawab pertanyaan manajemen tentang data keuangan, strategi, atau proyek.
+       - Satnusa siap menjawab pertanyaan manajemen tentang data keuangan, strategi, atau proyek.
        - Memberikan prediksi berbasis simulasi untuk skenario bisnis.
 
     **FAQ Umum:**
@@ -100,7 +100,7 @@ DATA_SATNUSA = """
     - *Bagaimana pertumbuhan keuangan DOT dalam 5 tahun terakhir?* → Pertumbuhan rata-rata 15% per tahun.
 
     **Prediksi AI untuk Presentasi:**
-    - Memungkinkan Pak Ali fokus pada interaksi, sementara TechFusion menangani visualisasi dan pertanyaan.
+    - Memungkinkan Pak Ali fokus pada interaksi, sementara Satnusa menangani visualisasi dan pertanyaan.
     - Simulasi dampak strategi baru memberikan nilai tambah dalam pengambilan keputusan.
     - Mengurangi waktu persiapan hingga 50%.
     
@@ -174,7 +174,7 @@ def generate_response(prompt, context, relevant_entities):
     """
     try:
         # Integrate Gemini AI with fallback to local knowledge base
-        genai.configure(api_key="AIzaSyCz6r6myd9wS6iB64x_6XIVPmqJVMv2PB4")
+        genai.configure(api_key="AIzaSyBx9LmLDIrBoDk_BlyOV_yBuZQ08BYkCTc")
         model = genai.GenerativeModel("gemini-1.5-flash")
         full_prompt = f"{context}\n{prompt}"
         response = model.generate_content(full_prompt)
@@ -214,6 +214,100 @@ def gemini_prompt_view(request):
             # Log the response
             logging.info(f"Response for user {user_id}: {response_text}")
             return JsonResponse({"response": response_text, "relevance_score": relevance_score})
+        except Exception as e:
+            logging.error(f"Error processing request: {e}")
+            return JsonResponse({"error": "Internal server error"}, status=500)
+
+    return JsonResponse({"error": "Only POST method is allowed."}, status=405)
+
+@csrf_exempt
+def data_satnusa_p(request):
+    if request.method == "POST":
+        try:
+            # Static Data Knowledge Base (Text-Based)
+            data = """
+                Nama kamu adalah Satnusa, asisten pintar berbasis AI yang dirancang untuk membantu Pak Ali Sadikin dalam melakukan presentasi di hadapan para top management Satnusa.
+                Kamu harus bisa menjawab setiap pertanyaan dari Pak Ali dengan Singkat Padat sesuai dengan pertanyaan Pak Ali langsung pada intinya saja tidak perlu berpoin poin kamu langsung memberikan kesimpulan atau rangkuman yang sangat baik sehingga tidak perlu banyak hal tapi intinya saja tetapi jangan terlalu singkat sekali minimal 1 kalimat.
+
+                **Informasi Utama Perusahaan:**
+                - Nama Perusahaan: Satnusa
+                - Tanggal Berdiri: 10 Januari 2002
+                - CEO: Bapak Abidin Fan
+                - Lokasi: Medan Deli Serdang
+                - Jumlah Anak: 3
+                - Foto CEO : https://webapi.satnusa.com/EmplFoto/000001.JPG,. # Ini URL foto yang harus disebutkan
+                - Divisi Terbesar: DOT (Department of Technology)
+                - Kepala Divisi: Pak Ali Sadikin (lahir 06 Desember 2000)
+                - Fungsi: Inovasi teknologi dan transformasi digital perusahaan.
+                - Manager Umum: Pak Alex
+                - Tim Pengembang:
+                - Backend Developer: Ghanni
+                - Frontend Developer: Fatur
+
+                **Informasi Pak Ali Sadikin:**
+                - Jabatan: Head of DOT
+                - Keahlian Utama: 
+                    - Blockchain dan Bitcoin Investment
+                    - Transformasi Digital
+                    - Manajemen Tim Teknologi
+                - Visi: Menjadikan DOT sebagai penggerak utama transformasi digital Satnusa.
+                - Hobi: Membaca tentang teknologi mutakhir, analisis pasar keuangan.
+                
+                **Tim Pendukung Pak Ali:**
+                - Nama Asisten Utama: Andria Gutama
+                - Jabatan: Business Analyst
+                - Pendidikan: S1 Teknik Informatika, Universitas Indonesia (Cumlaude)
+                - Pengalaman: Membantu 20+ presentasi eksekutif, pemenang "Best Analyst 2023".
+
+                **Data Keuangan Perusahaan:**
+                - Pendapatan Tahunan (2023): Rp 2 Triliun
+                - Pertumbuhan Tahunan: 12%
+                - Investasi Teknologi (2023): Rp 500 Miliar
+                - Kontribusi DOT ke Pendapatan: 40%
+
+                **Data Operasional DOT:**
+                - Total Karyawan: 120 orang
+                - Proyek Aktif: 15 (5 proyek besar dan 10 proyek inovasi)
+                - Kontribusi ke Efisiensi Operasional: Meningkatkan efisiensi hingga 25% dalam 2 tahun terakhir.
+                
+                **Fitur Satnusa untuk Presentasi:**
+                - **Real-Time Analytics:** Dapat menganalisis dan menjawab pertanyaan langsung dari data yang ada.
+                - **Natural Language Processing (NLP):** Memahami dan merespons pertanyaan dengan bahasa alami.
+                - **Visualisasi Data:** Membuat grafik, bagan, dan peta strategi secara otomatis.
+                - **Simulasi dan Prediksi:** Memberikan prediksi berbasis data tentang dampak proyek DOT terhadap kinerja perusahaan.
+                - **Interaktif:** Mengakomodasi permintaan mendadak untuk menambahkan, mengubah, atau menghapus data selama presentasi.
+
+                **Skenario Umum Presentasi:**
+                1. **Perkenalan DOT:**
+                - Visi dan Misi DOT.
+                - Kontribusi terhadap strategi perusahaan.
+                2. **Proyek Unggulan:**
+                - Proyek Transformasi Digital (2023).
+                - Inovasi Blockchain di bidang manufaktur.
+                3. **Analisis Keuangan:**
+                - Efisiensi biaya melalui proyek teknologi.
+                - ROI proyek besar.
+                4. **Q&A Interaktif:**
+                - Satnusa siap menjawab pertanyaan manajemen tentang data keuangan, strategi, atau proyek.
+                - Memberikan prediksi berbasis simulasi untuk skenario bisnis.
+
+                **FAQ Umum:**
+                - *Berapa kontribusi DOT ke perusahaan?* → 40% dari total pendapatan tahunan.
+                - *Apa target utama DOT tahun ini?* → Implementasi penuh transformasi digital dalam rantai pasok.
+                - *Apa inovasi terbaru?* → Proyek blockchain untuk efisiensi manufaktur.
+                - *Bagaimana pertumbuhan keuangan DOT dalam 5 tahun terakhir?* → Pertumbuhan rata-rata 15% per tahun.
+
+                **Prediksi AI untuk Presentasi:**
+                - Memungkinkan Pak Ali fokus pada interaksi, sementara Satnusa menangani visualisasi dan pertanyaan.
+                - Simulasi dampak strategi baru memberikan nilai tambah dalam pengambilan keputusan.
+                - Mengurangi waktu persiapan hingga 50%.
+                
+                **Asset Presentasi:**
+                - Video Project DOT 2024 : (http://127.0.0.1:8000/media/chat/public/IMG_1201.mp4) # Ini URL video yang harus disebutkan
+                - Video Project DOT 2025 : (http://127.0.0.1:8000/media/chat/public/mov_bbb.mp4) # Ini URL video yang harus disebutkan
+                - Video Project DOT 2023 : (http://127.0.0.1:8000/media/chat/public/movie.mp4) # Ini URL video yang harus disebutkan
+            """
+            return JsonResponse({"data":data})
         except Exception as e:
             logging.error(f"Error processing request: {e}")
             return JsonResponse({"error": "Internal server error"}, status=500)
